@@ -11,5 +11,8 @@
     "url": "git+https://github.com/lctoye/fragments.git"
   },
   "author": "Liam Toye",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "prettier": "3.2.5"
+  }
 }
