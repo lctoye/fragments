@@ -23,5 +23,3 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Start our server
 require('./server');
-
-unused = 'this will make ESlint fail';
