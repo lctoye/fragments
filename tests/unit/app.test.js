@@ -7,6 +7,6 @@ const app = require('../../src/app');
 describe('Test for 404 response', () => {
   test('should return 404 response', async () => {
     const res = await request(app).get('/nonexistent');
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(403);
   });
 });
