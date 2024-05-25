@@ -7,6 +7,9 @@ const compression = require('compression');
 const passport = require('passport');
 const authenticate = require('./auth');
 
+// Import error helper
+const { createErrorResponse } = require('./response');
+
 // author and version from our package.json file
 // const { author, version } = require('../package.json');
 
@@ -62,13 +65,9 @@ app.use((err, req, res, next) => {
     logger.error({ err }, `Error processing request`);
   }
 
-  res.status(status).json({
-    status: 'error',
-    error: {
-      message,
-      code: status,
-    },
-  });
+  // Create an error response object and send it back to the client
+  const errorResponse = createErrorResponse(status, message);
+  res.status(status).json(errorResponse);
 });
 
 // Export our `app` so we can access it in server.js

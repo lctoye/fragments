@@ -11,6 +11,9 @@ const { version, author } = require('../../package.json');
 // Create a router that we can use to mount our API
 const router = express.Router();
 
+// Import response helper
+const { createSuccessResponse } = require('../response');
+
 /**
  * Expose all of our API routes on /v1/* to include an API version.
  * Protect them all with middleware so you have to be authenticated
@@ -25,13 +28,17 @@ router.use(`/v1`, authenticate(), require('./api'));
 router.get('/', (req, res) => {
   // Clients shouldn't cache this response (always request it fresh)
   res.setHeader('Cache-Control', 'no-cache');
-  // Send a 200 'OK' response
-  res.status(200).json({
+
+  // Put the data into a success response object
+  const successResponse = createSuccessResponse({
     status: 'ok',
     author,
     githubUrl: 'https://github.com/lctoye/fragments',
     version,
   });
+
+  // Send a 200 'OK' response with the success response as JSON
+  res.status(200).json(successResponse);
 });
 
 module.exports = router;
