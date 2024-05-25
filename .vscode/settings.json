@@ -9,5 +9,5 @@
   },
   "files.eol": "\n",
   "files.insertFinalNewline": true,
-  "cSpell.words": ["helmetjs", "pino"]
+  "cSpell.words": ["helmetjs", "JWKS", "pino"]
 }
