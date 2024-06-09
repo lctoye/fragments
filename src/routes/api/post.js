@@ -17,7 +17,7 @@ const createFragment = async (req, res) => {
 
   try {
     const fragment = new Fragment({
-      ownerId: req.user.hashedEmail,
+      ownerId: req.user,
       type: req.headers['content-type'],
       size: req.body.length,
     });
