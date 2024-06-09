@@ -1,24 +1,17 @@
 // src/routes/api/get.js
 
-const { createSuccessResponse } = require('../../response');
-
+const { createSuccessResponse, createErrorResponse } = require('../../response');
+const { Fragment } = require('../../model/fragment');
+const logger = require('../../logger');
 /**
  * Get a list of fragments for the current user
  */
-module.exports = (req, res) => {
-  // Put the data into a success response object
-  const successResponse = createSuccessResponse({
-    status: 'ok',
-    fragments: [],
-  });
-
-  // Send a 200 'OK' response with the success response as JSON
-  res.status(200).json(successResponse);
-
-  // TODO: this is just a placeholder. To get something working, return an empty array...
-  // res.status(200).json({
-  //   status: 'ok',
-  //   // TODO: change me
-  //   fragments: [],
-  // });
+module.exports = async (req, res) => {
+  try {
+    const fragList = await Fragment.byUser(req.user, req.query.expand);
+    logger.debug('expand is set to ' + req.query.expand);
+    res.status(200).json(createSuccessResponse({ fragments: fragList }));
+  } catch (error) {
+    res.status(404).json(createErrorResponse(404, error));
+  }
 };
