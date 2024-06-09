@@ -28,6 +28,11 @@ const createFragment = async (req, res) => {
     await fragment.setData(req.body);
 
     const successResponse = createSuccessResponse({ fragment });
+
+    // Construct the Location header URL
+    const location = `${req.protocol}://${req.get('host')}/v1/fragments/${fragment.id}`;
+    res.setHeader('Location', location);
+
     return res.status(201).json(successResponse);
   } catch (error) {
     logger.error('Error creating fragment', error);
