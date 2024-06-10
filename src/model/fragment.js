@@ -67,7 +67,7 @@ class Fragment {
     const fragment = await readFragment(ownerId, id);
     if (fragment) return fragment;
     logger.error(`Fragment ${id} not found for user ${ownerId}`);
-    throw new Promise.reject(`Fragment ${id} not found for user ${ownerId}`);
+    return Promise.reject(new Error(`Fragment ${id} not found for user ${ownerId}`));
   }
 
   /**

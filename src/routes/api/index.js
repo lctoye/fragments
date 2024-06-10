@@ -9,6 +9,7 @@ const contentType = require('content-type');
 const { Fragment } = require('../../model/fragment');
 const { createFragment } = require('./post');
 const getFragments = require('./get');
+const getById = require('./getById');
 
 // Create a router on which to mount our API endpoints
 const router = express.Router();
@@ -43,5 +44,8 @@ router.post(
   },
   createFragment
 );
+
+// Define the GET /v1/fragments/:id route
+router.get('/fragments/:id', getById);
 
 module.exports = router;
