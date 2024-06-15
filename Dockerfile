@@ -1,39 +1,55 @@
-# Use node version 20.13.1
-FROM node:20.13.1
+# Stage 1: Build
+#####################
+FROM node:20.13.1-alpine AS build
 
-LABEL maintainer="Liam Toye <lctoye@myseneca.ca"
-LABEL description="Fragments node.js microservice"
-
-# We default to use port 8080 in our service
-ENV PORT=8080
-
-# Reduce npm spam when installing within Docker
-# https://docs.npmjs.com/cli/v8/using-npm/config#loglevel
-ENV NPM_CONFIG_LOGLEVEL=warn
-
-# Disable colour when run inside Docker
-# https://docs.npmjs.com/cli/v8/using-npm/config#color
-ENV NPM_CONFIG_COLOR=false
+# Set environment variables for the build stage
+ENV NPM_CONFIG_LOGLEVEL=warn \
+    NPM_CONFIG_COLOR=false
 
 # Use /app as our working directory
 WORKDIR /app
 
-# Option 1: explicit path - Copy the package.json and package-lock.json
-# files into /app. NOTE: the trailing `/` on `/app/`, which tells Docker
-# that `app` is a directory and not a file.
-COPY package*.json /app/
+# Copy package.json and package-lock.json first to leverage Docker cache
+COPY package*.json ./
 
-# Install node dependencies defined in package-lock.json
-RUN npm install
+# Install all dependencies
+RUN npm ci
 
-# Copy src to /app/src/
-COPY ./src ./src
+# Stage 2: Production
+#####################
+FROM node:20.13.1-alpine AS production
 
-# Copy our HTPASSWD file
-COPY ./tests/.htpasswd ./tests/.htpasswd
+LABEL maintainer="Liam Toye <lctoye@myseneca.ca>"
+LABEL description="Fragments node.js microservice"
+
+# Set environment variables for the runtime stage
+ENV PORT=8080 \
+    NPM_CONFIG_LOGLEVEL=warn \
+    NPM_CONFIG_COLOR=false \
+    NODE_ENV=production
+
+# Use /app as our working directory
+WORKDIR /app
+
+# Install dumb-init
+RUN apk add --no-cache dumb-init
+
+# Copy only the necessary files from the build stage and set correct ownership
+COPY --from=build --chown=node:node /app/package*.json ./
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+
+# Copy source files to /app/
+COPY --chown=node:node ./src ./src
+COPY --chown=node:node ./tests/.htpasswd ./tests/.htpasswd
+
+# Use a non-root user
+USER node
+
+# Use a lightweight init system with signals support
+ENTRYPOINT ["dumb-init", "--"]
+
+# Expose port 8080
+EXPOSE 8080
 
 # Start the container by running our server
-CMD npm start
-
-# We run our service on port 8080
-EXPOSE 8080
+CMD ["node", "src/index.js"]
