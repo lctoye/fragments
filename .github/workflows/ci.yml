@@ -80,6 +80,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fragments:latest,
-            ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6
+          tags: 
+            ${{ secrets.DOCKER_USERNAME }}/fragments:latest,
+            ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6,
+            ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6-step-21,
           labels: ${{ steps.meta.outputs.labels }}
