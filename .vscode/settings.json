@@ -9,5 +9,6 @@
   },
   "files.eol": "\n",
   "files.insertFinalNewline": true,
-  "cSpell.words": ["helmetjs", "HTPASSWD", "JWKS", "pino"]
+  "cSpell.words": ["helmetjs", "HTPASSWD", "JWKS", "pino"],
+  "window.autoDetectColorScheme": true
 }

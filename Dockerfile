@@ -1,6 +1,8 @@
 # Stage 1: Build
 #####################
-FROM node:20.13.1-alpine AS build
+
+# Use big image for build stage in case tools like gcc are needed to compile packages
+FROM node:latest AS build
 
 # Set environment variables for the build stage
 ENV NPM_CONFIG_LOGLEVEL=warn \
@@ -12,12 +14,15 @@ WORKDIR /app
 # Copy package.json and package-lock.json first to leverage Docker cache
 COPY package*.json ./
 
-# Install all dependencies
-RUN npm ci
+# Install dependencies
+RUN npm ci --only=production
+
 
 # Stage 2: Production
 #####################
-FROM node:20.13.1-alpine AS production
+
+# Use a smaller image for the production stage, but avoid alpine in case it causes issues
+FROM node:20.13.1-bullseye-slim AS production
 
 LABEL maintainer="Liam Toye <lctoye@myseneca.ca>"
 LABEL description="Fragments node.js microservice"
@@ -45,11 +50,11 @@ COPY --chown=node:node ./tests/.htpasswd ./tests/.htpasswd
 # Use a non-root user
 USER node
 
-# Use a lightweight init system with signals support
-ENTRYPOINT ["dumb-init", "--"]
+# Start the container by running our server
+CMD ["dumb-init", "node", "src/index.js"]
 
 # Expose port 8080
 EXPOSE 8080
 
-# Start the container by running our server
-CMD ["node", "src/index.js"]
+# Define a healthcheck command
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -f http://localhost/ || exit 1
