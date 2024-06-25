@@ -4,6 +4,9 @@
 # Use big image for build stage in case tools like gcc are needed to compile packages
 FROM node:latest AS build
 
+# Update and set up dumb-init
+RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
+
 # Set environment variables for the build stage
 ENV NPM_CONFIG_LOGLEVEL=warn \
     NPM_CONFIG_COLOR=false
@@ -36,8 +39,8 @@ ENV PORT=8080 \
 # Use /app as our working directory
 WORKDIR /app
 
-# Install dumb-init
-RUN apk add --no-cache dumb-init
+# Copy dumb-init from the build stage
+COPY --from=build /usr/bin/dumb-init /usr/bin/dumb-init
 
 # Copy only the necessary files from the build stage and set correct ownership
 COPY --from=build --chown=node:node /app/package*.json ./
