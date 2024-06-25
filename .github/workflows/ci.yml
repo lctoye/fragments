@@ -4,7 +4,8 @@
 name: ci
 
 # This workflow will run whenever we push commits to the `main` branch, or
-# whenever there's a pull request to the `main` branch.
+# whenever there's a pull request to the `main` branch. See:
+# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#on
 on:
   pull_request:
     branches:
@@ -15,19 +16,27 @@ on:
 
 jobs:
   lint:
+    # Give your job a name that will show up in the GitHub Actions web UI
     name: ESLint
+    # We'll run this on a Linux (Ubuntu) VM, since we'll deploy on Linux too.
     runs-on: ubuntu-latest
+    # We run these steps one after the other, and if any fail, we stop the process
     steps:
+      # https://github.com/actions/checkout
       - name: Check out code
         uses: actions/checkout@v4
 
+      # https://github.com/actions/setup-node
       - name: Setup node
         uses: actions/setup-node@v4
         with:
+          # Use node LTS https://github.com/actions/setup-node#supported-version-syntax
           node-version: 'lts/*'
+          # Cache npm dependencies so they don't have to be downloaded next time - https://github.com/actions/setup-node#caching-packages-dependencies
           cache: 'npm'
 
       - name: Install node dependencies
+        # Use `ci` vs. `install`, see https://docs.npmjs.com/cli/v8/commands/npm-ci
         run: npm ci
 
       - name: Run ESLint
@@ -47,40 +56,13 @@ jobs:
           cache: 'npm'
 
       - name: Install node dependencies and run Tests
+        # There are two ways we could do this:
+        #
+        # 1. Call `npm ci` followed by `npm test` like so (NOTE: the use of | and -):
+        # run: |
+        # - npm install
+        # - npm test
+        #
+        # 2. Use `install-ci-test` to do it in a single command, see https://docs.npmjs.com/cli/v8/commands/npm-install-ci-test
+        # run: npm install-ci-test
         run: npm install-ci-test
-
-  push_to_registry:
-    name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ${{ secrets.DOCKER_USERNAME }}/fragments
-
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fragments:latest,
-            ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6
-          labels: ${{ steps.meta.outputs.labels }}
