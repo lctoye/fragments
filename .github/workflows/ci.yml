@@ -81,8 +81,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: 
-            ${{ secrets.DOCKER_USERNAME }}/fragments:latest,
-            ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6,
-            ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6-step-20,
-            ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6-step-21
+            ${{ secrets.DOCKER_USERNAME }}/fragments:latest
+            # ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6,
+            # ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6-step-20,
+            # ${{ secrets.DOCKER_USERNAME }}/fragments:lab-6-step-21
           labels: ${{ steps.meta.outputs.labels }}
