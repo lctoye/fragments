@@ -5,7 +5,7 @@
 FROM node:20.13.1 AS build
 
 # Update and set up dumb-init
-RUN apt-get update && apt-get install -y --no-install-recommends dumb-init=1.2.2-1.2
+RUN apt-get update && apt-get install -y --no-install-recommends dumb-init=1.2.5-2
 
 # Set environment variables for the build stage
 ENV NPM_CONFIG_LOGLEVEL=warn \
