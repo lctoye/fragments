@@ -2,10 +2,10 @@
 #####################
 
 # Use big image for build stage in case tools like gcc are needed to compile packages
-FROM node:latest AS build
+FROM node:20.13.1 AS build
 
 # Update and set up dumb-init
-RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
+RUN apt-get update && apt-get install -y --no-install-recommends dumb-init=1.2.5
 
 # Set environment variables for the build stage
 ENV NPM_CONFIG_LOGLEVEL=warn \
