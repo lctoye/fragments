@@ -12,6 +12,7 @@ module.exports = async (req, res) => {
     logger.debug('expand is set to ' + req.query.expand);
     res.status(200).json(createSuccessResponse({ fragments: fragList }));
   } catch (error) {
+    logger.error('Error getting fragments: ', error);
     res.status(404).json(createErrorResponse(404, error));
   }
 };

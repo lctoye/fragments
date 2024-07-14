@@ -66,8 +66,8 @@ class Fragment {
   static async byId(ownerId, id) {
     const fragment = await readFragment(ownerId, id);
     if (fragment) return fragment;
-    logger.error(`Fragment ${id} not found for user ${ownerId}`);
-    return Promise.reject(new Error(`Fragment ${id} not found for user ${ownerId}`));
+    logger.error('Fragment ${id} not found for user ${ownerId}');
+    return Promise.reject(new Error('Fragment ${id} not found for user ${ownerId}'));
   }
 
   /**
@@ -106,7 +106,7 @@ class Fragment {
     if (!data) {
       throw new Promise.reject('data is required');
     }
-    logger.info(`Setting data for fragment ${this.id}`);
+    logger.info('Setting data for fragment ' + this.id);
     this.size = data.length;
     this.updated = new Date().toISOString();
     await writeFragmentData(this.ownerId, this.id, data);
@@ -145,7 +145,18 @@ class Fragment {
    */
   static isSupportedType(value) {
     const { type } = contentType.parse(value);
-    const supportedTypes = ['text/plain', 'text/html', 'text/css', 'application/json'];
+    const supportedTypes = [
+      'text/plain',
+      'text/markdown',
+      'text/html',
+      'text/csv',
+      'application/json',
+      'image/png',
+      'image/jpeg',
+      'image/webp',
+      'image/avif',
+      'image/gif',
+    ];
     return supportedTypes.includes(type);
   }
 }

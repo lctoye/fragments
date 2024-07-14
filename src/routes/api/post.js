@@ -1,8 +1,13 @@
 const { createSuccessResponse, createErrorResponse } = require('../../response');
 const { Fragment } = require('../../model/fragment');
 const logger = require('../../logger');
+var contentType = require('content-type');
 
 const createFragment = async (req, res) => {
+  const ownerId = req.user;
+  const { type } = contentType.parse(req.get('Content-Type'));
+  const size = Number(req.headers['content-length']);
+
   logger.debug('Received POST /fragments request', {
     headers: req.headers,
     bodyType: typeof req.body,
@@ -17,9 +22,9 @@ const createFragment = async (req, res) => {
 
   try {
     const fragment = new Fragment({
-      ownerId: req.user,
-      type: req.headers['content-type'],
-      size: req.body.length,
+      ownerId,
+      type,
+      size,
     });
 
     logger.debug(`Created fragment ${fragment.id} for user ${fragment.ownerId}`);
