@@ -50,4 +50,7 @@ router.post(
 router.get('/fragments/:id', getById);
 router.get('/fragments/:id/info', getInfo);
 
+// Define the DELETE /v1/fragments/:id route
+router.delete('/fragments/:id', require('./delete'));
+
 module.exports = router;
