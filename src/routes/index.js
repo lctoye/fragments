@@ -1,5 +1,5 @@
 // src/routes/index.js
-
+const { hostname } = require('os');
 const express = require('express');
 
 // Our authentication middleware
@@ -34,6 +34,7 @@ router.get('/', (req, res) => {
     status: 'ok',
     author,
     githubUrl: 'https://github.com/lctoye/fragments',
+    hostname: hostname(),
     version,
   });
 
