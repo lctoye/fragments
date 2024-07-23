@@ -51,13 +51,16 @@ COPY --chown=node:node ./src ./src
 COPY --chown=node:node ./tests/.htpasswd ./tests/.htpasswd
 
 # Use a non-root user
-USER node
+# USER node
+
+# Nevermind, we need root to bind to port 80
+USER root
 
 # Start the container by running our server
 CMD ["dumb-init", "node", "src/index.js"]
 
-# Expose port 8080
-EXPOSE 8080
+# Expose port 8080/whatever is defined in the PORT environment variable
+EXPOSE ${PORT}
 
 # Define a healthcheck command
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -f http://localhost/ || exit 1
