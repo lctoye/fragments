@@ -50,10 +50,8 @@ COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --chown=node:node ./src ./src
 COPY --chown=node:node ./tests/.htpasswd ./tests/.htpasswd
 
-# Use a non-root user
-# USER node
-
-# Nevermind, we need root to bind to port 80
+# We have to run as root to use port 80
+# hadolint ignore=DL3002
 USER root
 
 # Start the container by running our server
