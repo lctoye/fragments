@@ -1,0 +1,120 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:us-east-1:853896475913:task-definition/fragments-task:1",
+    "containerDefinitions": [
+        {
+            "name": "fragments-container",
+            "image": "lctoye/fragments:latest",
+            "cpu": 256,
+            "memoryReservation": 512,
+            "portMappings": [
+                {
+                    "name": "fragments-container-80-tcp",
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "AWS_COGNITO_POOL_ID",
+                    "value": "us-east-1_NxcV3Fdgq"
+                },
+                {
+                    "name": "API_URL",
+                    "value": "http://localhost:8080"
+                },
+                {
+                    "name": "PORT",
+                    "value": "80"
+                },
+                {
+                    "name": "OAUTH_SIGN_IN_REDIRECT_URL",
+                    "value": "http://localhost:1234"
+                },
+                {
+                    "name": "AWS_COGNITO_HOSTED_UI_DOMAIN",
+                    "value": "lctoye.auth.us-east-1.amazoncognito.com"
+                },
+                {
+                    "name": "OAUTH_SIGN_OUT_REDIRECT_URL",
+                    "value": "http://localhost:1234"
+                },
+                {
+                    "name": "AWS_COGNITO_CLIENT_ID",
+                    "value": "119c0lnm47hdh2be2ddejb0tct"
+                },
+                {
+                    "name": "LOG_LEVEL",
+                    "value": "debug"
+                }
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/fragments-task",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "fragments-task",
+    "taskRoleArn": "arn:aws:iam::853896475913:role/LabRole",
+    "executionRoleArn": "arn:aws:iam::853896475913:role/LabRole",
+    "networkMode": "awsvpc",
+    "revision": 1,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "registeredAt": "2024-07-23T01:24:49.092Z",
+    "registeredBy": "arn:aws:sts::853896475913:assumed-role/voclabs/user3286467=lctoye@myseneca.ca",
+    "tags": []
+}
