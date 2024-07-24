@@ -96,6 +96,7 @@ jobs:
             AWS_COGNITO_CLIENT_ID=119c0lnm47hdh2be2ddejb0tct
             AWS_COGNITO_HOSTED_UI_DOMAIN=lctoye.auth.us-east-1.amazoncognito.com
             AWS_COGNITO_POOL_ID=us-east-1_NxcV3Fdgq
+            AWS_S3_BUCKET_NAME=lctoye-fragments
             OAUTH_SIGN_IN_REDIRECT_URL=http://localhost:1234
             OAUTH_SIGN_OUT_REDIRECT_URL=http://localhost:1234
             aws-access-key-id=${{ secrets.AWS_ACCESS_KEY_ID }}
