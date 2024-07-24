@@ -23,7 +23,7 @@
                 },
                 {
                     "name": "API_URL",
-                    "value": "http://localhost:8080"
+                    "value": "fragments-lb-1165727383.us-east-1.elb.amazonaws.com"
                 },
                 {
                     "name": "PORT",
