@@ -82,7 +82,7 @@ jobs:
           VERSION_TAG: ${{ github.ref_name }}
         with:
           task-definition: fragments-definition.json
-          container-name: fragments
+          container-name: fragments-container
           # Use the image we just built and pushed to ECR for this tag
           image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ env.VERSION_TAG }}
           # Add all the necessary environment variables, using GitHub Encrypted Secrets
@@ -97,7 +97,7 @@ jobs:
             AWS_COGNITO_HOSTED_UI_DOMAIN=lctoye.auth.us-east-1.amazoncognito.com
             AWS_COGNITO_POOL_ID=us-east-1_NxcV3Fdgq
             OAUTH_SIGN_IN_REDIRECT_URL=http://localhost:1234
-            OAUTH_SIGN_OUT_REDIRECT_URLhttp://localhost:1234
+            OAUTH_SIGN_OUT_REDIRECT_URL=http://localhost:1234
             aws-access-key-id=${{ secrets.AWS_ACCESS_KEY_ID }}
             aws-secret-access-key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-session-token=${{ secrets.AWS_SESSION_TOKEN }}
