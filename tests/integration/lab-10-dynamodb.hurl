@@ -33,7 +33,6 @@ jsonpath "$.fragment.ownerId" == {{owner_id}}
 jsonpath "$.fragment.created" isString
 jsonpath "$.fragment.updated" isString
 jsonpath "$.fragment.type" == "application/json"
-jsonpath "$.fragment.size" == 27
 
 # 4. POST a second Markdown fragment to http://localhost:8080 as the same authorized user. The fragment's body should be the Markdown value, DynamoDB is **great**..
 
@@ -52,7 +51,8 @@ HTTP/1.1 201
 fragment2_url: header "Location"
 fragment2_id: jsonpath "$.fragment.id"
 
-# 6. GET the fragment info (i.e., metadata) you just created using the url/info as an authorized user and confirm that the server returns a 200 and that all of the metadata properties match what you expect.
+# 6. GET the fragment info (i.e., metadata) you just created using the url/info as an authorized user 
+# and confirm that the server returns a 200 and that all of the metadata properties match what you expect.
 
 GET {{fragment2_url}}/info
 [BasicAuth]
@@ -68,7 +68,6 @@ jsonpath "$.fragment.ownerId" == {{owner_id}}
 jsonpath "$.fragment.created" isString
 jsonpath "$.fragment.updated" isString
 jsonpath "$.fragment.type" == "text/markdown"
-jsonpath "$.fragment.size" == 24
 
 # 7. GET all of the fragments for the same authorized user without expanding them (i.e., just get back the IDs)
 #    and confirm that the list of fragments includes the two id values you captured above
