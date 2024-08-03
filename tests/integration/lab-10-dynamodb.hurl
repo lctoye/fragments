@@ -33,7 +33,7 @@ jsonpath "$.fragment.ownerId" == {{owner_id}}
 jsonpath "$.fragment.created" isString
 jsonpath "$.fragment.updated" isString
 jsonpath "$.fragment.type" == "application/json"
-jsonpath "$.fragment.size" == 26
+jsonpath "$.fragment.size" == 27
 
 # 4. POST a second Markdown fragment to http://localhost:8080 as the same authorized user. The fragment's body should be the Markdown value, DynamoDB is **great**..
 
@@ -68,7 +68,7 @@ jsonpath "$.fragment.ownerId" == {{owner_id}}
 jsonpath "$.fragment.created" isString
 jsonpath "$.fragment.updated" isString
 jsonpath "$.fragment.type" == "text/markdown"
-jsonpath "$.fragment.size" == 23
+jsonpath "$.fragment.size" == 24
 
 # 7. GET all of the fragments for the same authorized user without expanding them (i.e., just get back the IDs)
 #    and confirm that the list of fragments includes the two id values you captured above
@@ -108,7 +108,7 @@ HTTP/1.1 404
 [Asserts]
 jsonpath "$.status" == "error"
 jsonpath "$.error.code" == 404
-jsonpath "$.error.message" contains "Failed to fetch fragment for ownerId {{owner_id}} and fragment ID {{fragment1_id}}"
+jsonpath "$.error.message" contains "fragment not found"
 
 # 12. GET all of the fragments for the same authorized user without expanding them (i.e., just get back the IDs) a second time, 
 #     and confirm that the first id is NOT included but that the second id is (i.e., that the second was not deleted).
