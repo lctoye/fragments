@@ -22,6 +22,10 @@
                     "value": "us-east-1_NxcV3Fdgq"
                 },
                 {
+                    "name": "AWS_DYNAMODB_TABLE_NAME",
+                    "value": "fragments"
+                },
+                {
                     "name": "API_URL",
                     "value": "fragments-lb-1165727383.us-east-1.elb.amazonaws.com"
                 },
