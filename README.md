@@ -1,6 +1,6 @@
 # fragments
 
-a node.js based REST API using Express
+a node.js based REST API using Express.js
 
 ## Development scripts
 
@@ -8,4 +8,4 @@ a node.js based REST API using Express
 - Develop with live reloading: `npm run dev`
 - Debug mode: `npm run debug`
 - Linter: `npm run lint`
-- Unit tests: `npm run test` 
+- Unit tests: `npm run test`
