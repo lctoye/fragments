@@ -91,12 +91,11 @@ jobs:
         run: npm install        
       - name: Build Containers
         run: docker compose up -d
-      - name: Wait for service to be up
-        run: |
-          until curl -s http://localhost:8080; do             
-            echo "Waiting for the service to be up..."             
-            sleep 5           
-          done
+      - name: Check ports
+        run:
+          curl http://localhost:8080
+          curl http://localhost:8000
+          curl http://127.0.0.1:8080
       - name: Ensure script is executable
         run: chmod +x ./scripts/local-aws-setup.sh
       - name: Setup Local AWS Resources
