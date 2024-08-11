@@ -1,8 +1,13 @@
-const { createErrorResponse } = require('../../response');
 const { Fragment } = require('../../model/fragment');
 const logger = require('../../logger');
 const MarkdownIt = require('markdown-it');
+const { htmlToText } = require('html-to-text');
+const { markdownToTxt } = require('markdown-to-txt');
+const sharp = require('sharp');
+const csvtojson = require('csvtojson');
+const { createErrorResponse } = require('../../response');
 
+// Get a fragment by id
 module.exports = async (req, res) => {
   const paramId = req.params.id;
   const ownerId = req.user;
@@ -15,8 +20,9 @@ module.exports = async (req, res) => {
     const fragmentData = await fragment.getData();
 
     logger.info(`Fetched fragment for ownerId ${ownerId} and fragment ID ${fragmentId}`);
+    // logger.debug({ fragmentData, fragment }, 'Fragment info'); // This can cause some trouble if the fragment is an image
 
-
+    // Extension provided, convert if possible
     if (ext !== undefined) {
       const convertedData = await convertFragment(fragmentData, fragment, ext);
 
@@ -32,103 +38,167 @@ module.exports = async (req, res) => {
   } catch (err) {
     logger.error(`Failed to fetch fragment for ownerId ${ownerId} and fragment ID ${fragmentId}`);
     logger.debug({ err }, 'Error fetching fragment');
-    return res.status(404).json(createErrorResponse(404, 'fragment not found'));
+    createErrorResponse(404, 'fragment not found');
+    // next(
+    //   new ApplicationError(
+    //     err.status || 404,
+    //     `Failed to fetch fragment for ownerId ${ownerId} and fragment ID ${fragmentId}`
+    //   )
+    // );
   }
 };
 
 const extToType = {
-  avif: 'image/avif',
-  csv: 'text/csv',
-  gif: 'image/gif',
-  html: 'text/html',
-  jpg: 'image/jpeg',
-  json: 'application/json',
-  md: 'text/markdown',
-  png: 'image/png',
   txt: 'text/plain',
+  md: 'text/markdown',
+  html: 'text/html',
+  csv: 'text/csv',
+  json: 'application/json',
+  png: 'image/png',
+  jpg: 'image/jpeg',
   webp: 'image/webp',
-};
-
-const converters = {
-  'text/markdown': {
-    'text/html': (data) => {
-      const md = new MarkdownIt({ html: true });
-      return md.render(data.toString());
-    }
-  }
+  gif: 'image/gif',
+  avif: 'image/avif',
 };
 
 async function convertFragment(fragmentData, fragment, ext) {
   const extType = extToType[ext]; // ext -> mime/type
-  //const validTypes = fragment.; // array of fragment's valid types
-  const fragmentType = fragment.type;
+  const validTypes = fragment.formats; // array of fragment's valid types
+  const fragmentType = fragment.mimeType;
 
   // Check if the requested type is valid
-  if (fragmentType !== 'text/markdown') {
-    throw new Error(`Cannot convert fragment to ${extType}`);
+  if (!validTypes.includes(extType)) {
+    createErrorResponse(415, `Cannot convert fragment to ${extType}`);
+    // throw new ApplicationError(415, `Cannot convert fragment to ${extType}`);
   }
 
-  const fragmentConverters = converters[fragmentType];
-  if (fragmentConverters && fragmentConverters[extType]) {
-    return fragmentConverters[extType](fragmentData);
+  let convertedData = fragmentData;
+
+  // Convert the fragment to the requested type
+  switch (fragmentType) {
+    // TEXT/MARKDOWN
+    case 'text/markdown':
+      if (extType === 'text/html') {
+        const md = new MarkdownIt({ html: true });
+        convertedData = md.render(fragmentData.toString());
+      } else if (extType === 'text/plain') {
+        convertedData = markdownToTxt(convertedData.toString());
+      }
+      break;
+
+    //  TEXT/HTML
+    case 'text/html':
+      if (extType === 'text/plain') {
+        convertedData = htmlToText(fragmentData.toString());
+      }
+      break;
+
+    //  TEXT/CSV
+    case 'text/csv':
+      if (extType === 'text/plain') {
+        convertedData = fragmentData.toString();
+      } else if (extType === 'application/json') {
+        await csvtojson()
+          .fromString(fragmentData.toString())
+          .then((jsonObj) => {
+            convertedData = jsonObj;
+          });
+      }
+      break;
+
+    //  APPLICATION/JSON
+    case 'application/json':
+      if (extType === 'text/plain') {
+        convertedData = JSON.stringify(fragmentData.toString());
+      }
+      break;
   }
 
-  return fragmentData; // Return original data if no conversion is needed
+  // IMAGE/*
+  // Convert any image to the requested type
+  if (fragmentType.startsWith('image/')) {
+    logger.debug(`Converting image from ${fragmentType} to ${extType}`);
+    convertedData = await sharp(fragmentData).toFormat(ext).toBuffer();
+  }
+
+  return convertedData;
 }
 
-// // src/routes/api/getById.js
-// const { Fragment } = require("../../model/fragment");
-// const logger = require("../../logger");
-// const { createErrorResponse } = require("../../response");
-// const mime = require("mime-types");
-// const markdown = require("markdown-it")();
- 
+
+// const { createErrorResponse } = require('../../response');
+// const { Fragment } = require('../../model/fragment');
+// const logger = require('../../logger');
+// const MarkdownIt = require('markdown-it');
+
 // module.exports = async (req, res) => {
+//   const paramId = req.params.id;
+//   const ownerId = req.user;
+//   const [fragmentId, ext] = paramId.split('.');
+
+//   logger.debug({ paramId, ownerId, fragmentId, ext }, 'Fetching fragment by ID');
+
 //   try {
-//     const { id } = req.params;
-//     const ownerId = req.user;
- 
-//     let fragment = await Fragment.byId(ownerId, id);
- 
-//     if (!fragment) {
-//       return res
-//         .status(404)
-//         .json(createErrorResponse(404, "Fragment not found"));
+//     const fragment = await Fragment.byId(ownerId, fragmentId);
+//     const fragmentData = await fragment.getData();
+
+//     logger.info(`Fetched fragment for ownerId ${ownerId} and fragment ID ${fragmentId}`);
+
+
+//     if (ext !== undefined) {
+//       const convertedData = await convertFragment(fragmentData, fragment, ext);
+
+//       logger.debug(`Converted ${fragment.mimeType} to ${extToType[ext]}`);
+
+//       res.setHeader('Content-Type', extToType[ext]);
+//       res.status(200).send(convertedData);
+//       return;
 //     }
- 
-//     let data = await fragment.getData();
-//     let mimeType = fragment.type;
- 
-//     // Check if there's an extension in the id
-//     const idParts = id.split(".");
-//     if (idParts.length > 1) {
-//       const requestedExtension = idParts.pop();
-//       const requestedMimeType = mime.lookup(requestedExtension);
- 
-//       if (!requestedMimeType) {
-//         return res
-//           .status(415)
-//           .json(createErrorResponse(415, "Unsupported Media Type"));
-//       }
- 
-//       // Handle conversion
-//       if (
-//         fragment.type === "text/markdown" &&
-//         requestedMimeType === "text/html"
-//       ) {
-//         data = markdown.render(data.toString());
-//         mimeType = "text/html";
-//       } else if (fragment.type !== requestedMimeType) {
-//         return res
-//           .status(415)
-//           .json(createErrorResponse(415, "Unsupported conversion"));
-//       }
-//     }
- 
-//     res.setHeader("Content-Type", mimeType);
-//     res.status(200).send(data);
-//   } catch (error) {
-//     logger.error(error);
-//     res.status(500).json(createErrorResponse(500, error.message));
+
+//     res.setHeader('Content-Type', fragment.type);
+//     res.status(200).send(fragmentData);
+//   } catch (err) {
+//     logger.error(`Failed to fetch fragment for ownerId ${ownerId} and fragment ID ${fragmentId}`);
+//     logger.debug({ err }, 'Error fetching fragment');
+//     return res.status(404).json(createErrorResponse(404, 'fragment not found'));
 //   }
 // };
+
+// const extToType = {
+//   avif: 'image/avif',
+//   csv: 'text/csv',
+//   gif: 'image/gif',
+//   html: 'text/html',
+//   jpg: 'image/jpeg',
+//   json: 'application/json',
+//   md: 'text/markdown',
+//   png: 'image/png',
+//   txt: 'text/plain',
+//   webp: 'image/webp',
+// };
+
+// const converters = {
+//   'text/markdown': {
+//     'text/html': (data) => {
+//       const md = new MarkdownIt({ html: true });
+//       return md.render(data.toString());
+//     }
+//   }
+// };
+
+// async function convertFragment(fragmentData, fragment, ext) {
+//   const extType = extToType[ext]; // ext -> mime/type
+//   //const validTypes = fragment.; // array of fragment's valid types
+//   const fragmentType = fragment.type;
+
+//   // Check if the requested type is valid
+//   if (fragmentType !== 'text/markdown') {
+//     throw new Error(`Cannot convert fragment to ${extType}`);
+//   }
+
+//   const fragmentConverters = converters[fragmentType];
+//   if (fragmentConverters && fragmentConverters[extType]) {
+//     return fragmentConverters[extType](fragmentData);
+//   }
+
+//   return fragmentData; // Return original data if no conversion is needed
+// }
