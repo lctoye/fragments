@@ -60,5 +60,7 @@ CMD ["dumb-init", "node", "src/index.js"]
 # Expose port 8080/whatever is defined in the PORT environment variable
 EXPOSE ${PORT}
 
+EXPOSE 8080
+
 # Define a healthcheck command
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -f http://localhost/ || exit 1
