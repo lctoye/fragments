@@ -90,13 +90,11 @@ jobs:
         # NOTE: we need to install dev dependencies too vs. production only for hurl
         run: npm install       
       - name: Build Containers
-        run: docker compose up
+        run: docker compose up -d
       - name: Ensure script is executable
         run: chmod +x ./scripts/local-aws-setup.sh
       - name: Setup Local AWS Resources
         run: ./scripts/local-aws-setup.sh
-      - name: Check Docker Compose Services Status
-        run: docker ps
       - name: Run Hurl Tests
         run: npm run test:integration  
 
