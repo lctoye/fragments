@@ -89,8 +89,6 @@ jobs:
       - name: Install node dependencies
         # NOTE: we need to install dev dependencies too vs. production only for hurl
         run: npm install       
-      - name: Destroy Running Containers
-        run: docker compose down
       - name: Build Containers
         run: docker compose up -d
       - name: Check Docker Compose Services Status
@@ -100,8 +98,11 @@ jobs:
       - name: Setup Local AWS Resources
         # NOTE: this file needs to be made executable *before* you check into git:
         # $ chmod +x ./scripts/local-aws-setup.sh
-        
         run: ./scripts/local-aws-setup.sh
+      - name: Check Docker Compose Services Status
+        run: docker ps
+      - name: Check if port 8080 is available
+        run: lsof -i :8080
       - name: Run Hurl Tests
         run: npm run test:integration  
 
