@@ -1,6 +1,6 @@
 # fragments
 
-a node.js based REST API using Express.js
+a node.js based REST API using Express
 
 ## Development scripts
 
