@@ -20,7 +20,6 @@ module.exports = async (req, res) => {
     const fragmentData = await fragment.getData();
 
     logger.info(`Fetched fragment for ownerId ${ownerId} and fragment ID ${fragmentId}`);
-    // logger.debug({ fragmentData, fragment }, 'Fragment info'); // This can cause some trouble if the fragment is an image
 
     // Extension provided, convert if possible
     if (ext !== undefined) {
@@ -29,24 +28,18 @@ module.exports = async (req, res) => {
       logger.debug(`Converted ${fragment.mimeType} to ${extToType[ext]}`);
 
       res.setHeader('Content-Type', extToType[ext]);
-      res.status(200).send(convertedData);
-      return;
+      return res.status(200).send(convertedData);  // End request after sending data
     }
 
     res.setHeader('Content-Type', fragment.type);
-    res.status(200).send(fragmentData);
+    return res.status(200).send(fragmentData);  // End request after sending data
   } catch (err) {
     logger.error(`Failed to fetch fragment for ownerId ${ownerId} and fragment ID ${fragmentId}`);
     logger.debug({ err }, 'Error fetching fragment');
-    createErrorResponse(404, 'fragment not found');
-    // next(
-    //   new ApplicationError(
-    //     err.status || 404,
-    //     `Failed to fetch fragment for ownerId ${ownerId} and fragment ID ${fragmentId}`
-    //   )
-    // );
+    return res.status(404).json(createErrorResponse(404, 'fragment not found'));  // Ensure response is sent
   }
 };
+
 
 const extToType = {
   txt: 'text/plain',
