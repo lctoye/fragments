@@ -1,49 +1,44 @@
-const { createSuccessResponse, createErrorResponse } = require('../../response');
-const { Fragment } = require('../../model/fragment');
+const { createSuccessResponse } = require('../../response');
 const logger = require('../../logger');
+const { Fragment } = require('../../model/fragment');
 var contentType = require('content-type');
+const { ApplicationError } = require('../../model/app-error');
 
-const createFragment = async (req, res) => {
+// Create a new fragment for the current user
+module.exports = async (req, res, next) => {
   const ownerId = req.user;
   const { type } = contentType.parse(req.get('Content-Type'));
   const size = Number(req.headers['content-length']);
 
-  logger.debug('Received POST /fragments request', {
-    headers: req.headers,
-    bodyType: typeof req.body,
-    isBuffer: Buffer.isBuffer(req.body),
-  });
-
-  if (!Buffer.isBuffer(req.body)) {
-    logger.warn('Unsupported content-type in request body');
-    const errorResponse = createErrorResponse(415, 'invalid request, missing fragment data');
-    return res.status(415).json(errorResponse);
-  }
+  logger.debug({ ownerId, type, size }, 'Creating a new fragment');
 
   try {
+    const isSupportedType = Fragment.isSupportedType(type);
+
+    // 415 - Disallow unsupported types
+    if (!isSupportedType) {
+      logger.error('Unsupported type:', type);
+      throw new ApplicationError(415, `Unsupported type: ${type}`);
+    }
+
     const fragment = new Fragment({
       ownerId,
       type,
       size,
     });
 
-    logger.debug(`Created fragment ${fragment.id} for user ${fragment.ownerId}`);
-
     await fragment.save();
     await fragment.setData(req.body);
 
-    const successResponse = createSuccessResponse({ fragment });
+    logger.info(`Created new fragment for ownerId ${ownerId} with fragment ID ${fragment.id}`);
 
-    // Construct the Location header URL
-    const location = `${req.protocol}://${req.get('host')}/v1/fragments/${fragment.id}`;
-    res.setHeader('Location', location);
+    const hostUrl = `${req.secure ? `https://` : `http://`}${req.headers.host}`;
+    logger.debug({ hostUrl }, 'Host URL');
 
-    return res.status(201).json(successResponse);
-  } catch (error) {
-    logger.error('Error creating fragment', error);
-    const errorResponse = createErrorResponse(500, 'internal server error');
-    return res.status(500).json(errorResponse);
+    res.setHeader('Location', `${hostUrl}/v1/fragments/${fragment.id}`);
+    res.status(201).json(createSuccessResponse({ fragment }));
+  } catch (err) {
+    logger.error({ err }, 'Error creating a new fragment');
+    next(err);
   }
 };
-
-module.exports = { createFragment };

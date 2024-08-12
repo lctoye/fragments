@@ -107,7 +107,7 @@ HTTP/1.1 404
 [Asserts]
 jsonpath "$.status" == "error"
 jsonpath "$.error.code" == 404
-jsonpath "$.error.message" contains "fragment not found"
+jsonpath "$.error.message" contains "Failed to fetch fragment"
 
 # 12. GET all of the fragments for the same authorized user without expanding them (i.e., just get back the IDs) a second time, 
 #     and confirm that the first id is NOT included but that the second id is (i.e., that the second was not deleted).

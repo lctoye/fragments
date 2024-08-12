@@ -1,5 +1,3 @@
-// src/model/fragment.js
-
 // Use crypto.randomUUID() to create unique IDs, see:
 // https://nodejs.org/api/crypto.html#cryptorandomuuidoptions
 const { randomUUID } = require('crypto');
@@ -18,33 +16,33 @@ const {
 } = require('./data');
 
 class Fragment {
-  constructor({ id, ownerId, created, updated, type, size = 0 }) {
-    if (!ownerId) {
-      logger.error('ownerId is required');
-      throw new Error('ownerId is required');
+  constructor({
+    id,
+    ownerId,
+    created = new Date().toISOString(),
+    updated = new Date().toISOString(),
+    type,
+    size = 0,
+  }) {
+    if (!ownerId || !type) {
+      throw new Error('ownerId and type are required');
     }
-
-    if (!type) {
-      logger.error('type is required');
-      throw new Error('type is required');
-    }
-
     if (typeof size !== 'number' || size < 0) {
-      logger.error('size must be a non-negative number');
       throw new Error('size must be a non-negative number');
     }
-
     if (!Fragment.isSupportedType(type)) {
-      logger.error('Unsupported type');
       throw new Error('Unsupported type');
     }
 
+    // TODO
     this.id = id || randomUUID();
     this.ownerId = ownerId;
     this.created = created || new Date().toISOString();
-    this.updated = updated || this.created;
+    this.updated = updated || new Date().toISOString();
     this.type = type;
     this.size = size;
+
+    logger.debug(`Created new fragment: ${JSON.stringify(this)}`);
   }
 
   /**
@@ -54,7 +52,12 @@ class Fragment {
    * @returns Promise<Array<Fragment>>
    */
   static async byUser(ownerId, expand = false) {
-    return listFragments(ownerId, expand);
+    try {
+      const fragments = await listFragments(ownerId, expand);
+      return fragments;
+    } catch (error) {
+      throw new Error(`Error finding fragments byUser for ownerId ${ownerId}: ${error.message}`);
+    }
   }
 
   /**
@@ -64,10 +67,19 @@ class Fragment {
    * @returns Promise<Fragment>
    */
   static async byId(ownerId, id) {
-    const fragment = await readFragment(ownerId, id);
-    if (fragment) return fragment;
-    logger.error('Fragment ${id} not found for user ${ownerId}');
-    return Promise.reject(new Error('Fragment ${id} not found for user ${ownerId}'));
+    try {
+      let fragmentMetadata = await readFragment(ownerId, id);
+
+      // If no fragment is found, throw an error
+      if (!fragmentMetadata) {
+        throw new Error(`Fragment not found for ownerId: ${ownerId} and id: ${id}`);
+      }
+
+      return new Fragment(fragmentMetadata);
+    } catch {
+      // Rethrow with error message
+      throw new Error(`Error fetching fragment byId for ownerId=${ownerId} and id=${id}`);
+    }
   }
 
   /**
@@ -76,8 +88,15 @@ class Fragment {
    * @param {string} id fragment's id
    * @returns Promise<void>
    */
-  static async delete(ownerId, id) {
-    return await deleteFragment(ownerId, id);
+  static delete(ownerId, id) {
+    // TODO
+    try {
+      return deleteFragment(ownerId, id);
+    } catch (error) {
+      throw new Error(
+        `Error deleting fragment for ownerId=${ownerId} and id=${id}: ${error.message}`
+      );
+    }
   }
 
   /**
@@ -85,8 +104,14 @@ class Fragment {
    * @returns Promise<void>
    */
   save() {
-    this.updated = new Date().toISOString();
-    return writeFragment(this);
+    try {
+      this.updated = new Date().toISOString();
+      return writeFragment(this);
+    } catch (error) {
+      throw new Error(
+        `Error saving fragment for ownerId=${this.ownerId} and id=${this.id}: ${error.message}`
+      );
+    }
   }
 
   /**
@@ -94,7 +119,21 @@ class Fragment {
    * @returns Promise<Buffer>
    */
   getData() {
-    return readFragmentData(this.ownerId, this.id);
+    // TODO
+
+    try {
+      const fragmentData = readFragmentData(this.ownerId, this.id);
+
+      if (!fragmentData) {
+        throw new Error(`Fragment not found for ownerId: ${this.ownerId} and id: ${this.id}`);
+      }
+
+      return fragmentData; // promise
+    } catch (err) {
+      throw new Error(
+        `Error fetching fragment data for ownerId=${this.ownerId} and id=${this.id}: ${err.message}`
+      );
+    }
   }
 
   /**
@@ -103,13 +142,22 @@ class Fragment {
    * @returns Promise<void>
    */
   async setData(data) {
-    if (!data) {
-      throw new Promise.reject('data is required');
+    try {
+      if (!Buffer.isBuffer(data)) {
+        throw new Error('Data must be a buffer');
+      }
+
+      this.size = data.length;
+      this.updated = new Date().toISOString();
+
+      await writeFragmentData(this.ownerId, this.id, data);
+
+      return;
+    } catch (error) {
+      throw new Error(
+        `Error setting fragment data for ownerId=${this.ownerId} and id=${this.id}: ${error.message}`
+      );
     }
-    logger.info('Setting data for fragment ' + this.id);
-    this.size = data.length;
-    this.updated = new Date().toISOString();
-    await writeFragmentData(this.ownerId, this.id, data);
   }
 
   /**
@@ -127,6 +175,7 @@ class Fragment {
    * @returns {boolean} true if fragment's type is text/*
    */
   get isText() {
+    // TODO
     return this.mimeType.startsWith('text/');
   }
 
@@ -135,7 +184,23 @@ class Fragment {
    * @returns {Array<string>} list of supported mime types
    */
   get formats() {
-    return [this.mimeType];
+    const conversionMap = {
+      'text/plain': ['text/plain'],
+      'text/markdown': ['text/markdown', 'text/html', 'text/plain'],
+      'text/html': ['text/html', 'text/plain'],
+      'text/csv': ['text/csv', 'text/plain', 'application/json'],
+      'application/json': ['application/json', 'text/plain'],
+      'image/png': ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'],
+      'image/jpeg': ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'],
+      'image/webp': ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'],
+      'image/avif': ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'],
+      'image/gif': ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'],
+    };
+
+    // Extract the media type
+    let { type } = contentType.parse(this.mimeType);
+
+    return conversionMap[type];
   }
 
   /**
@@ -144,21 +209,27 @@ class Fragment {
    * @returns {boolean} true if we support this Content-Type (i.e., type/subtype)
    */
   static isSupportedType(value) {
-    const { type } = contentType.parse(value);
-    const supportedTypes = [
-      'text/plain',
-      'text/markdown',
-      'text/html',
-      'text/csv',
-      'application/json',
-      'image/png',
-      'image/jpeg',
-      'image/webp',
-      'image/avif',
-      'image/gif',
+    const validTypes = [
+      `text/plain`,
+      `text/markdown`,
+      `text/html`,
+      `text/csv`,
+      `application/json`,
+
+      `image/png`,
+      `image/jpeg`,
+      `image/webp`,
+      `image/avif`,
+      `image/gif`,
     ];
-    return supportedTypes.includes(type);
+
+    // Extract the media type
+    let { type } = contentType.parse(value);
+
+    // Check if the value includes any of the valid types
+    return validTypes.includes(type);
   }
 }
 
+// export the Fragment class
 module.exports.Fragment = Fragment;
