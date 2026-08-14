@@ -20,8 +20,18 @@ echo "AWS_DEFAULT_REGION=us-east-1"
 
 # Wait for LocalStack to be ready, by inspecting the response from healthcheck
 echo 'Waiting for LocalStack S3...'
-until (curl --silent http://localhost:4566/_localstack/health | grep "\"s3\": \"\(running\|available\)\"" > /dev/null); do
-    sleep 5
+MAX_RETRIES=60
+RETRY_DELAY=2
+RETRIES=0
+until curl --silent http://localhost:4566/_localstack/health \
+  | grep -E '"s3"[[:space:]]*:[[:space:]]*"(running|available)"' > /dev/null; do
+    RETRIES=$((RETRIES + 1))
+    if [ "$RETRIES" -ge "$MAX_RETRIES" ]; then
+        echo "Timed out waiting for LocalStack S3 readiness after $((MAX_RETRIES * RETRY_DELAY)) seconds."
+        curl --silent http://localhost:4566/_localstack/health || true
+        exit 1
+    fi
+    sleep "$RETRY_DELAY"
 done
 echo 'LocalStack S3 Ready'
 

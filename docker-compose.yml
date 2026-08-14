@@ -26,7 +26,7 @@ services:
     command: ['-jar', 'DynamoDBLocal.jar', '-inMemory']
 
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:3.8.1
     ports:
       - '4566:4566'
     environment:
