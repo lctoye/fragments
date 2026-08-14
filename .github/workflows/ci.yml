@@ -87,8 +87,11 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
       - name: Install node dependencies
-        # NOTE: we need to install dev dependencies too vs. production only for hurl
         run: npm install       
+      - name: Install Hurl
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y hurl
       - name: Build Containers
         run: docker compose up -d
       - name: Ensure script is executable
