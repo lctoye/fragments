@@ -29,7 +29,7 @@
     "supertest": "^7.0.0"
   },
   "overrides": {
-    "brace-expansion": "^5.0.9",
+    "brace-expansion": "^5.0.12",
     "fast-xml-parser": "^5.7.3",
     "qs": "^6.16.0",
     "tar": "^7.5.10"
@@ -39,7 +39,7 @@
     "@aws-sdk/client-s3": "^3.1003.0",
     "@aws-sdk/lib-dynamodb": "^3.622.0",
     "aws-jwt-verify": "^4.0.1",
-    "compression": "^1.8.1",
+    "compression": "^1.8.2",
     "content-type": "^1.0.5",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
@@ -58,7 +58,7 @@
     "pino": "^9.0.0",
     "pino-http": "^10.1.0",
     "pino-pretty": "^11.0.0",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "stoppable": "^1.1.0"
   }
 }
